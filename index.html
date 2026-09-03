@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- Se deshabilita el zoom mediante gestos en dispositivos móviles -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DUELIST KINGDOM TCG</title>
     <style>
@@ -10,11 +9,11 @@
            VARIABLES Y CONFIGURACIÓN GENERAL
            ========================================================================== */
         :root {
-            --bg-dark: #0a0a12;
+            --bg-dark: #07070d;
             --gold-yugioh: #ffcc00;
-            --gold-glow: #ff8800;
+            --gold-glow: #ff7700;
             --blue-pokemon: #00d2ff;
-            --blue-glow: #3a7bd5;
+            --blue-glow: #0055ff;
             --text-light: #f5f5f7;
         }
 
@@ -26,7 +25,6 @@
             touch-action: manipulation;
         }
 
-        /* Bloquea scroll global en toda la ventana */
         html, body {
             width: 100%;
             height: 100vh;
@@ -40,15 +38,39 @@
             position: relative;
         }
 
-        /* Fondo radial dinámico */
+        /* ==========================================================================
+           FONDO ANIMADO Y PARTÍCULAS
+           ========================================================================== */
         .background-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 50% 30%, #1a102f 0%, #050508 100%);
+            background: radial-gradient(circle at 50% 40%, #1c0e3a 0%, #080512 60%, #030206 100%);
+            z-index: -2;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: -1;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255, 204, 0, 0.4), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, rgba(0, 210, 255, 0.4), rgba(0,0,0,0)),
+                radial-gradient(3px 3px at 80px 120px, rgba(255, 255, 255, 0.3), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 150px 40px, rgba(255, 119, 0, 0.4), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: floatingParticles 15s linear infinite;
+        }
+
+        @keyframes floatingParticles {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px -400px; }
         }
 
         .container {
@@ -60,59 +82,86 @@
             justify-content: center;
             align-items: center;
             padding: 10px;
+            z-index: 1;
         }
 
         /* ==========================================================================
-           ENCABEZADO Y EFECTOS DEL TÍTULO
+           EFECTOS MÁGICOS Y RESPLANDOR SUAVE (2 SEGUNDOS)
            ========================================================================== */
         .hero-header {
-            margin-bottom: clamp(10px, 3vh, 25px);
+            margin-bottom: clamp(15px, 3.5vh, 30px);
             text-align: center;
         }
 
         .sub-title {
-            font-size: clamp(0.75rem, 1.8vh, 1rem);
-            letter-spacing: 4px;
-            color: #8888aa;
-            margin-bottom: 2px;
-            font-weight: 600;
+            font-size: clamp(0.75rem, 1.8vh, 1.1rem);
+            letter-spacing: 6px;
+            color: #a0a0cc;
+            margin-bottom: 4px;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(160, 160, 204, 0.3);
         }
 
+        /* Título con resplandor continuo que se enciende y apaga suavemente cada 2s */
         .main-title {
-            font-size: clamp(2rem, 5.5vh, 4rem);
+            font-size: clamp(2.2rem, 6vh, 4.2rem);
             font-weight: 900;
             text-transform: uppercase;
-            background: linear-gradient(180deg, #ffffff 0%, #d4af37 60%, #aa7c11 100%);
+            letter-spacing: 3px;
+            line-height: 1.1;
+            
+            /* Degradado dorado metálico */
+            background: linear-gradient(
+                180deg, 
+                #ffffff 0%, 
+                #fff2a3 30%, 
+                #ffcc00 70%, 
+                #b8860b 100%
+            );
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-            letter-spacing: 2px;
-            animation: pulseGlow 3s infinite alternate ease-in-out;
-            line-height: 1.1;
+            
+            /* Animación suave de 2 segundos */
+            animation: smoothPulse 2s infinite alternate ease-in-out;
         }
 
         .store-tag {
             font-size: clamp(0.65rem, 1.4vh, 0.85rem);
-            letter-spacing: 4px;
-            color: #cccccc;
-            margin-top: 4px;
+            letter-spacing: 5px;
+            color: #d0d0e0;
+            margin-top: 6px;
             text-transform: uppercase;
-            font-weight: 500;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Animación: Se enciende y apaga suavemente */
+        @keyframes smoothPulse {
+            0% {
+                /* Estado "Apagado" / Luz ténue */
+                filter: drop-shadow(0 0 5px rgba(255, 204, 0, 0.2));
+                opacity: 0.85;
+            }
+            100% {
+                /* Estado "Encendido" / Resplandor dorado intenso */
+                filter: drop-shadow(0 0 25px rgba(255, 204, 0, 0.95)) 
+                        drop-shadow(0 0 45px rgba(255, 119, 0, 0.6));
+                opacity: 1;
+            }
         }
 
         /* ==========================================================================
-           SECCIÓN DE PORTALES (BOTONES ORGANIZADOS Y MÁS GRANDES)
+           SECCIÓN DE PORTALES Y TARJETAS VIVAS
            ========================================================================== */
         .portal-selection {
             display: grid;
             width: 100%;
-            gap: clamp(12px, 2.5vh, 25px);
+            gap: clamp(15px, 2.5vh, 30px);
             justify-content: center;
             align-items: center;
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        /* Orientación en Celular Vertical: Uno sobre otro */
         @media (max-width: 767px) and (orientation: portrait) {
             .portal-selection {
                 grid-template-columns: 1fr;
@@ -122,12 +171,12 @@
         .portal-card {
             text-decoration: none;
             color: inherit;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 16px;
-            padding: clamp(18px, 3.5vh, 32px) clamp(15px, 2.5vw, 25px);
-            border: 2px solid rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(18, 16, 32, 0.5);
+            border-radius: 18px;
+            padding: clamp(20px, 3.8vh, 36px) clamp(16px, 2.8vw, 28px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
             cursor: pointer;
@@ -144,13 +193,14 @@
 
         .badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 4px 14px;
             border-radius: 20px;
             font-size: clamp(0.7rem, 1.3vh, 0.8rem);
-            font-weight: 700;
-            margin-bottom: clamp(6px, 1.2vh, 12px);
-            background: rgba(255, 255, 255, 0.12);
-            letter-spacing: 1px;
+            font-weight: 800;
+            margin-bottom: clamp(8px, 1.3vh, 14px);
+            background: rgba(255, 255, 255, 0.15);
+            letter-spacing: 1.5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .portal-card h2 {
@@ -160,7 +210,7 @@
         }
 
         .portal-card h3 {
-            font-size: clamp(1.8rem, 4.2vh, 2.6rem);
+            font-size: clamp(2rem, 4.5vh, 2.8rem);
             margin-bottom: clamp(6px, 1.2vh, 12px);
             font-weight: 900;
             line-height: 1.1;
@@ -168,18 +218,17 @@
 
         .portal-card p {
             font-size: clamp(0.85rem, 1.8vh, 1.05rem);
-            color: #aaaaee;
-            margin-bottom: clamp(14px, 2.5vh, 24px);
-            line-height: 1.3;
+            color: #b0b0e0;
+            margin-bottom: clamp(16px, 2.8vh, 26px);
+            line-height: 1.35;
         }
 
-        /* Botón de acción principal agrandado */
         .btn-action {
             display: block;
-            padding: clamp(12px, 2vh, 16px) 20px;
+            padding: clamp(12px, 2.2vh, 18px) 20px;
             border-radius: 10px;
             font-weight: 900;
-            font-size: clamp(0.85rem, 1.9vh, 1.05rem);
+            font-size: clamp(0.85rem, 1.9vh, 1.1rem);
             letter-spacing: 1.5px;
             transition: all 0.3s ease;
             width: 100%;
@@ -191,29 +240,31 @@
            ========================================================================== */
         .yugioh-portal {
             border-color: rgba(255, 204, 0, 0.4);
+            box-shadow: inset 0 0 15px rgba(255, 204, 0, 0.08);
         }
 
         .yugioh-portal h3 {
             color: var(--gold-yugioh);
-            text-shadow: 0 0 12px rgba(255, 204, 0, 0.5);
+            text-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
         }
 
         .yugioh-portal .btn-action {
-            background: rgba(255, 204, 0, 0.1);
+            background: rgba(255, 204, 0, 0.12);
             border: 2px solid var(--gold-yugioh);
             color: var(--gold-yugioh);
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
         }
 
         .yugioh-portal:hover {
-            transform: translateY(-4px) scale(1.015);
+            transform: translateY(-6px) scale(1.02);
             border-color: var(--gold-yugioh);
-            box-shadow: 0 10px 30px rgba(255, 136, 0, 0.4);
+            box-shadow: 0 12px 35px rgba(255, 119, 0, 0.45), inset 0 0 25px rgba(255, 204, 0, 0.2);
         }
 
         .yugioh-portal:hover .btn-action {
             background: var(--gold-yugioh);
             color: #000000;
-            box-shadow: 0 0 20px var(--gold-yugioh);
+            box-shadow: 0 0 25px var(--gold-yugioh);
         }
 
         /* ==========================================================================
@@ -221,51 +272,44 @@
            ========================================================================== */
         .pokemon-portal {
             border-color: rgba(0, 210, 255, 0.4);
+            box-shadow: inset 0 0 15px rgba(0, 210, 255, 0.08);
         }
 
         .pokemon-portal h3 {
             color: var(--blue-pokemon);
-            text-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+            text-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
         }
 
         .pokemon-portal .btn-action {
-            background: rgba(0, 210, 255, 0.1);
+            background: rgba(0, 210, 255, 0.12);
             border: 2px solid var(--blue-pokemon);
             color: var(--blue-pokemon);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
         }
 
         .pokemon-portal:hover {
-            transform: translateY(-4px) scale(1.015);
+            transform: translateY(-6px) scale(1.02);
             border-color: var(--blue-pokemon);
-            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+            box-shadow: 0 12px 35px rgba(0, 150, 255, 0.45), inset 0 0 25px rgba(0, 210, 255, 0.2);
         }
 
         .pokemon-portal:hover .btn-action {
             background: var(--blue-pokemon);
             color: #000000;
-            box-shadow: 0 0 20px var(--blue-pokemon);
-        }
-
-        /* Animación del Título Principal */
-        @keyframes pulseGlow {
-            0% {
-                filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
-            }
-            100% {
-                filter: drop-shadow(0 0 25px rgba(255, 204, 0, 0.7));
-            }
+            box-shadow: 0 0 25px var(--blue-pokemon);
         }
     </style>
 </head>
 <body>
     <div class="background-overlay"></div>
+    <div class="particles"></div>
     
     <main class="container">
-        <!-- Encabezado Principal -->
+        <!-- Encabezado Principal con Resplandor Suave -->
         <header class="hero-header">
             <h2 class="sub-title">BIENVENIDO A</h2>
-            <h1 class="main-title">DUELIST KINGDOM</h1>
-            <p class="store-tag">TCG STORE &amp; TOURNAMENT CENTER</p>
+            <h1 class="main-title">DUELIST KINGDOM EC</h1>
+            <p class="store-tag">TIENDA TCG &amp; CENTRO DE TORNEOS</p>
         </header>
 
         <!-- Selección de Sección -->
@@ -274,10 +318,10 @@
             <a href="masterLigaDK.html" class="portal-card yugioh-portal">
                 <div class="portal-content">
                     <span class="badge">TCG</span>
-                    <h2>MASTER LIGA</h2>
+                    <h2>MASTER LIGA DK</h2>
                     <h3>Yu-Gi-Oh!</h3>
-                    <p>Clasificación, mazos meta y torneos semanales</p>
-                    <span class="btn-action">ENTRAR AL DUELO</span>
+                    <p>It's Time to Duel!</p>
+                    <span class="btn-action">INICIAR DUELO</span>
                 </div>
             </a>
 
@@ -285,9 +329,9 @@
             <a href="seriesPokemon.html" class="portal-card pokemon-portal">
                 <div class="portal-content">
                     <span class="badge">TCG</span>
-                    <h2>SERIES</h2>
+                    <h2>POKEDEX DK</h2>
                     <h3>POKÉMON</h3>
-                    <p>Tabla de posiciones, liga local y resultados</p>
+                    <p>Gotta catch 'em all!</p>
                     <span class="btn-action">INICIAR AVENTURA</span>
                 </div>
             </a>
