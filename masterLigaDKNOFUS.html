@@ -769,7 +769,7 @@
 
         <!-- Botón Eliminar Foto (En medio) -->
         <div style="margin-top: 10px;">
-            <button id="btn-eliminar-foto-ganador" class="btn btn-peligro" style="font-size: 0.8rem; padding: 6px 12px;">🗑️ Eliminar Foto</button>
+            <button id="btn-eliminar-foto-ganador" class="btn btn-peligro" style="font-size: 0.8rem; padding: 6px 12px;">🗑 Eliminar Foto</button>
         </div>
 
         <!-- Botón Subir Foto (Debajo) -->
@@ -951,7 +951,7 @@
                     <tr>
                         <th>MES LIGA</th>
                         <th>Duelista Campeón</th>
-                        <th>Master Stars</th>
+                        <th>Atributos</th>
                         <th class="columna-acciones-anual">Acciones</th>
                     </tr>
                 </thead>
@@ -989,6 +989,7 @@
         maestroDuelistas: [],
         semanaFinalizada: false,
         campeonesMensuales: {}, 
+        atributosAsignados: {}, // Persistencia estricta de atributos asignados por mes
         anoFinalizado: false,
         ganadorSemanalTexto: "",
         fotoGanadorUrl: ""
@@ -1108,6 +1109,7 @@
             if (!appEstado.fechasJornadas) appEstado.fechasJornadas = {};
             if (appEstado.semanaFinalizada === undefined) appEstado.semanaFinalizada = false;
             if (appEstado.campeonesMensuales === undefined) appEstado.campeonesMensuales = {};
+            if (appEstado.atributosAsignados === undefined) appEstado.atributosAsignados = {};
             if (appEstado.anoFinalizado === undefined) appEstado.anoFinalizado = false;
             if (appEstado.ganadorSemanalTexto === undefined) appEstado.ganadorSemanalTexto = "";
             if (appEstado.fotoGanadorUrl === undefined) appEstado.fotoGanadorUrl = "";
@@ -1345,6 +1347,7 @@
     btnEliminarTablaAnual.addEventListener('click', () => {
         if (confirm("¿Estás seguro de que deseas ELIMINAR TODOS los datos de la Tabla Anual? Esto borrará todos los campeones asignados a los meses.")) {
             appEstado.campeonesMensuales = {};
+            appEstado.atributosAsignados = {};
             despacharPersistencia();
         }
     });
@@ -1566,7 +1569,7 @@
             fila.className = mapearClaseEstilo(reg.campeon, reg.penalizacion);
 
             let tagEstado = "Normal";
-            if (reg.campeon && reg.penalizacion) tagEstado = "🏆 Campeón / ⚠️ Penalizado";
+            if (reg.campeon && reg.penalizacion) tagEstado = "🏆 Campeón / ⚠ Penalizado";
             else if (reg.campeon) tagEstado = "🏆 Campeón";
             else if (reg.penalizacion) tagEstado = "⚠️ Penalizado";
 
@@ -1768,6 +1771,41 @@
         }
 
         appEstado.campeonesMensuales[mesSeleccionado] = nombreCampeon;
+
+        // Calcular y fijar el atributo para este mes de forma permanente
+        if (!appEstado.atributosAsignados) appEstado.atributosAsignados = {};
+        
+        let conteoPrevio = 0;
+        let atributosAcumulados = [];
+        mesesDelAno.forEach(m => {
+            if (m === mesSeleccionado) return;
+            if (appEstado.campeonesMensuales[m] === nombreCampeon && appEstado.atributosAsignados[m]) {
+                conteoPrevio++;
+                atributosAcumulados.push(appEstado.atributosAsignados[m]);
+            }
+        });
+
+        const victoriaNumero = conteoPrevio + 1;
+        let nuevoAtributo = "";
+
+        if (victoriaNumero <= 4) {
+            const poolBasicos = ["atributo1.png", "atributo2.png", "atributo3.png", "atributo4.png"];
+            const disponibles = poolBasicos.filter(attr => !atributosAcumulados.includes(attr));
+            if (disponibles.length > 0) {
+                nuevoAtributo = disponibles[Math.floor(Math.random() * disponibles.length)];
+            } else {
+                nuevoAtributo = poolBasicos[Math.floor(Math.random() * poolBasicos.length)];
+            }
+        } else if (victoriaNumero === 5) {
+            nuevoAtributo = "dark.png";
+        } else if (victoriaNumero === 6) {
+            nuevoAtributo = "light.png";
+        } else {
+            nuevoAtributo = "divine.png";
+        }
+
+        appEstado.atributosAsignados[mesSeleccionado] = nuevoAtributo;
+
         despacharPersistencia();
         txtNombreCampeonMes.value = "";
     }
@@ -1776,6 +1814,9 @@
         if (appEstado.anoFinalizado) return;
         if (confirm(`¿Estás seguro de que deseas eliminar al campeón del mes de ${mes}?`)) {
             delete appEstado.campeonesMensuales[mes];
+            if (appEstado.atributosAsignados) {
+                delete appEstado.atributosAsignados[mes];
+            }
             despacharPersistencia();
         }
     }
@@ -1783,8 +1824,10 @@
     function renderizarTablaAnualYCampeones() {
         cuerpoMasterChampion.innerHTML = "";
         
-        const acumuladorEstrellas = {};
+        const historialAtributosPorDuelista = {};
         const conteoTotalEstrellas = {};
+
+        if (!appEstado.atributosAsignados) appEstado.atributosAsignados = {};
 
         mesesDelAno.forEach(mes => {
             const campeon = appEstado.campeonesMensuales[mes];
@@ -1800,17 +1843,51 @@
 
         mesesDelAno.forEach(mes => {
             const campeon = appEstado.campeonesMensuales[mes] || "-";
-            let columnaEstrellas = "-";
+            let columnaAtributosHtml = "-";
             let claseMitica = "";
             let botonEliminarHtml = "";
 
             if (campeon !== "-") {
-                acumuladorEstrellas[campeon] = (acumuladorEstrellas[campeon] || 0) + 1;
-                columnaEstrellas = "⭐".repeat(acumuladorEstrellas[campeon]);
+                if (!historialAtributosPorDuelista[campeon]) {
+                    historialAtributosPorDuelista[campeon] = [];
+                }
+
+                const listaAtributosActual = historialAtributosPorDuelista[campeon];
+                let atributoDelMes = appEstado.atributosAsignados[mes];
+
+                // Respaldo determinista: Si un mes con campeón no tiene atributo guardado, asignarlo de forma fija
+                if (!atributoDelMes) {
+                    const victoriaNumero = listaAtributosActual.length + 1;
+                    if (victoriaNumero <= 4) {
+                        const poolBasicos = ["atributo1.png", "atributo2.png", "atributo3.png", "atributo4.png"];
+                        const disponibles = poolBasicos.filter(attr => !listaAtributosActual.includes(attr));
+                        if (disponibles.length > 0) {
+                            atributoDelMes = disponibles[0];
+                        } else {
+                            atributoDelMes = poolBasicos[(victoriaNumero - 1) % poolBasicos.length];
+                        }
+                    } else if (victoriaNumero === 5) {
+                        atributoDelMes = "dark.png";
+                    } else if (victoriaNumero === 6) {
+                        atributoDelMes = "light.png";
+                    } else {
+                        atributoDelMes = "divine.png";
+                    }
+                    appEstado.atributosAsignados[mes] = atributoDelMes;
+                    despacharPersistencia();
+                }
+
+                listaAtributosActual.push(atributoDelMes);
+
+                columnaAtributosHtml = `<div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">` + 
+                    listaAtributosActual.map(attrName => 
+                        `<img src="atributos/${attrName}" alt="${attrName}" style="height: 28px; width: auto; object-fit: contain; vertical-align: middle;" />`
+                    ).join('') + 
+                    `</div>`;
 
                 const estrellasTotalesDeEsteDuelista = conteoTotalEstrellas[campeon] || 0;
                 
-                if (acumuladorEstrellas[campeon] === estrellasTotalesDeEsteDuelista && estrellasTotalesDeEsteDuelista === maxEstrellas && maxEstrellas > 0) {
+                if (listaAtributosActual.length === estrellasTotalesDeEsteDuelista && estrellasTotalesDeEsteDuelista === maxEstrellas && maxEstrellas > 0) {
                     claseMitica = ' class="rainbow-glow"';
                 } else {
                     claseMitica = ' class="gold-glow"';
@@ -1823,7 +1900,7 @@
             filaM.innerHTML = `
                 <td style="color: var(--oro); font-weight: 600;">${mes}</td>
                 <td${claseMitica} style="white-space: nowrap !important;">${campeon}</td>
-                <td${claseMitica} style="text-align: left;">${columnaEstrellas}</td>
+                <td style="text-align: left;">${columnaAtributosHtml}</td>
                 <td class="columna-acciones-anual">${botonEliminarHtml}</td>
             `;
             cuerpoMasterChampion.appendChild(filaM);
@@ -1966,6 +2043,7 @@
             appEstado.maestroDuelistas = [];
             Object.keys(appEstado.jornadas).forEach(dia => { appEstado.jornadas[dia] = []; });
             appEstado.campeonesMensuales = {};
+            appEstado.atributosAsignados = {};
             despacharPersistencia();
             secMaestroDuelistas.style.display = "none";
         }
