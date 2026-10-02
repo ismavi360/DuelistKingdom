@@ -465,6 +465,7 @@
             letter-spacing: 0.5px;
             border-bottom: 2px solid #000000;
             white-space: nowrap; 
+            vertical-align: middle;
         }
 
         td {
@@ -501,12 +502,70 @@
         #tabla-master-champion td {
             border-bottom: 1px solid #cbd5e1;
             color: #0f172a;
+            vertical-align: middle;
         }
 
         /* Corrección estricta para evitar saltos entre palabras en la columna MES LIGA */
         #tabla-master-champion td:first-child {
             white-space: nowrap !important;
             word-break: normal !important;
+            vertical-align: middle;
+        }
+
+        /* Contenedor optimizado de Medallas (Exactamente 3 por fila, sin desbordamiento horizontal) */
+        .contenedor-medallas-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            align-items: center;
+            justify-items: center;
+            max-width: 180px;
+            width: 100%;
+        }
+
+        .contenedor-medallas-grid img {
+            height: 48px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Modal Selección Medallas Mobile First (3 por fila sin scroll horizontal) */
+        .grid-selector-medallas {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 10px 0;
+            max-height: 280px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        .opcion-medalla-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f4f4f4;
+            border: 2px solid #232323;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .opcion-medalla-item:hover, .opcion-medalla-item:active {
+            border-color: #28aadc;
+            transform: scale(1.08);
+            background: #e0f2fe;
+        }
+
+        .opcion-medalla-item img {
+            width: 100%;
+            max-width: 48px;
+            height: 48px;
+            object-fit: contain;
         }
 
         tr.estado-normal { background-color: transparent; }
@@ -704,6 +763,17 @@
                 padding: 6px 10px;
                 font-size: 0.75rem;
                 flex: 1 1 auto;
+            }
+
+            /* Reducción del espacio entre filas y tamaño de medallas en celular vertical */
+            .contenedor-medallas-grid {
+                gap: 2px;
+                max-width: 105px;
+            }
+
+            .contenedor-medallas-grid img {
+                height: 28px;
+                max-width: 28px;
             }
         }
 
@@ -959,7 +1029,7 @@
                     <tr>
                         <th>MES LIGA</th>
                         <th>Entrenador</th>
-                        <th>MEDALLAS</th>
+                        <th>MEDALLA</th>
                         <th class="columna-acciones-anual">Acciones</th>
                     </tr>
                 </thead>
@@ -997,6 +1067,7 @@
         maestroDuelistas: [],
         semanaFinalizada: false,
         campeonesMensuales: {}, 
+        medallasMensuales: {}, // Estructura: { "ENERO": "medalla1.png", ... }
         anoFinalizado: false,
         ganadorSemanalTexto: "",
         fotoGanadorUrl: ""
@@ -1005,6 +1076,12 @@
     let diaActivoActual = "";
     let esModoEspectador = true;
     let claveAdminCorrecta = "";
+
+    // Lista global de medallas de la carpeta medallas
+    const MEDALLAS_DISPONIBLES = [
+        "medalla1.png", "medalla2.png", "medalla3.png", "medalla4.png",
+        "medalla5.png", "medalla6.png", "medalla7.png", "medalla8.png"
+    ];
 
     // --- ENLACES AL DOM ---
     const chkDias = document.querySelectorAll('.chk-dia');
@@ -1116,6 +1193,7 @@
             if (!appEstado.fechasJornadas) appEstado.fechasJornadas = {};
             if (appEstado.semanaFinalizada === undefined) appEstado.semanaFinalizada = false;
             if (appEstado.campeonesMensuales === undefined) appEstado.campeonesMensuales = {};
+            if (appEstado.medallasMensuales === undefined) appEstado.medallasMensuales = {};
             if (appEstado.anoFinalizado === undefined) appEstado.anoFinalizado = false;
             if (appEstado.ganadorSemanalTexto === undefined) appEstado.ganadorSemanalTexto = "";
             if (appEstado.fotoGanadorUrl === undefined) appEstado.fotoGanadorUrl = "";
@@ -1353,6 +1431,7 @@
     btnEliminarTablaAnual.addEventListener('click', () => {
         if (confirm("¿Estás seguro de que deseas ELIMINAR TODOS los datos de la Tabla Anual? Esto borrará todos los campeones asignados a los meses.")) {
             appEstado.campeonesMensuales = {};
+            appEstado.medallasMensuales = {};
             despacharPersistencia();
         }
     });
@@ -1574,7 +1653,7 @@
             fila.className = mapearClaseEstilo(reg.campeon, reg.penalizacion);
 
             let tagEstado = "Normal";
-            if (reg.campeon && reg.penalizacion) tagEstado = "🏆 Campeón / ⚠️ Penalizado";
+            if (reg.campeon && reg.penalizacion) tagEstado = "🏆 Campeón / ⚠ Penalizado";
             else if (reg.campeon) tagEstado = "🏆 Campeón";
             else if (reg.penalizacion) tagEstado = "⚠️ Penalizado";
 
@@ -1778,47 +1857,144 @@
         appEstado.campeonesMensuales[mesSeleccionado] = nombreCampeon;
         despacharPersistencia();
         txtNombreCampeonMes.value = "";
+
+        // Al asignar el campeón, desplegar inmediatamente el modal para elegir su medalla
+        abrirModalAsignarMedalla(mesSeleccionado, nombreCampeon);
     }
 
     function eliminarCampeonMensual(mes) {
         if (appEstado.anoFinalizado) return;
         if (confirm(`¿Estás seguro de que deseas eliminar al campeón del mes de ${mes}?`)) {
             delete appEstado.campeonesMensuales[mes];
+            if (appEstado.medallasMensuales) {
+                delete appEstado.medallasMensuales[mes];
+            }
             despacharPersistencia();
         }
+    }
+
+    function abrirModalAsignarMedalla(mes, jugador) {
+        if (appEstado.anoFinalizado || esModoEspectador) return;
+
+        // Obtener medallas que este jugador YA tiene asignadas en OTROS meses
+        const medallasObtenidasJugador = [];
+        Object.keys(appEstado.campeonesMensuales).forEach(m => {
+            if (appEstado.campeonesMensuales[m] === jugador && appEstado.medallasMensuales && appEstado.medallasMensuales[m]) {
+                if (m !== mes) { // Excluir el mes actual si es que se está editando
+                    medallasObtenidasJugador.push(appEstado.medallasMensuales[m]);
+                }
+            }
+        });
+
+        // Filtrar medallas disponibles sin repetir las que ya posee el jugador
+        const medallasDisponibles = MEDALLAS_DISPONIBLES.filter(med => !medallasObtenidasJugador.includes(med));
+
+        const modal = document.createElement('div');
+        modal.style = `
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #ffffff; color: #111111; padding: 20px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7); z-index: 10000; font-family: sans-serif;
+            border: 3px solid #232323; width: 90%; max-width: 360px; text-align: center;
+        `;
+
+        let opcionesMedallasHtml = "";
+        if (medallasDisponibles.length === 0) {
+            opcionesMedallasHtml = `<p style="font-size: 0.85rem; color: #666;">El jugador ya posee todas las medallas disponibles.</p>`;
+        } else {
+            opcionesMedallasHtml = `<div class="grid-selector-medallas">` + 
+                medallasDisponibles.map(med => `
+                    <div class="opcion-medalla-item" data-medalla="${med}">
+                        <img src="medallas/${med}" alt="${med}">
+                    </div>
+                `).join('') + `</div>`;
+        }
+
+        modal.innerHTML = `
+            <h3 style="margin-top:0; margin-bottom:8px; color: #28aadc; font-size: 1.1rem; text-transform: uppercase;">SELECCIONAR MEDALLA</h3>
+            <p style="font-size:0.85rem; color: #333333; margin-bottom:12px;"><strong>${jugador}</strong> (${mes})</p>
+            ${opcionesMedallasHtml}
+            <button id="modal-btn-cancelar-medalla" class="btn btn-peligro" style="width:100%; margin-top:10px; padding: 8px 12px; font-size:0.85rem;">Cancelar</button>
+        `;
+
+        const overlay = document.createElement('div');
+        overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999;';
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(modal);
+
+        const cerrar = () => {
+            modal.remove();
+            overlay.remove();
+        };
+
+        modal.querySelectorAll('.opcion-medalla-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const medallaSeleccionada = e.currentTarget.getAttribute('data-medalla');
+                if (!appEstado.medallasMensuales) appEstado.medallasMensuales = {};
+                appEstado.medallasMensuales[mes] = medallaSeleccionada;
+                despacharPersistencia();
+                cerrar();
+            });
+        });
+
+        document.getElementById('modal-btn-cancelar-medalla').addEventListener('click', cerrar);
     }
 
     function renderizarTablaAnualYCampeones() {
         cuerpoMasterChampion.innerHTML = "";
         
-        const acumuladorEstrellas = {};
-        const conteoTotalEstrellas = {};
+        const acumuladorGanados = {};
+        const conteoTotalVictorias = {};
 
         mesesDelAno.forEach(mes => {
             const campeon = appEstado.campeonesMensuales[mes];
             if (campeon) {
-                conteoTotalEstrellas[campeon] = (conteoTotalEstrellas[campeon] || 0) + 1;
+                conteoTotalVictorias[campeon] = (conteoTotalVictorias[campeon] || 0) + 1;
             }
         });
 
-        let maxEstrellas = 0;
-        Object.keys(conteoTotalEstrellas).forEach(p => {
-            if (conteoTotalEstrellas[p] > maxEstrellas) maxEstrellas = conteoTotalEstrellas[p];
+        let maxVictorias = 0;
+        Object.keys(conteoTotalVictorias).forEach(p => {
+            if (conteoTotalVictorias[p] > maxVictorias) maxVictorias = conteoTotalVictorias[p];
         });
+
+        // Seguimiento acumulativo cronológico de medallas por entrenador
+        const historialMedallasPorEntrenador = {};
 
         mesesDelAno.forEach(mes => {
             const campeon = appEstado.campeonesMensuales[mes] || "-";
-            let columnaEstrellas = "-";
+            let columnaMedallas = "-";
             let claseMitica = "";
             let botonEliminarHtml = "";
 
             if (campeon !== "-") {
-                acumuladorEstrellas[campeon] = (acumuladorEstrellas[campeon] || 0) + 1;
-                columnaEstrellas = "⭐".repeat(acumuladorEstrellas[campeon]);
+                acumuladorGanados[campeon] = (acumuladorGanados[campeon] || 0) + 1;
 
-                const estrellasTotalesDeEsteDuelista = conteoTotalEstrellas[campeon] || 0;
+                const medallaAsignadaMes = appEstado.medallasMensuales ? appEstado.medallasMensuales[mes] : null;
+
+                if (!historialMedallasPorEntrenador[campeon]) {
+                    historialMedallasPorEntrenador[campeon] = [];
+                }
+
+                if (medallaAsignadaMes && !historialMedallasPorEntrenador[campeon].includes(medallaAsignadaMes)) {
+                    historialMedallasPorEntrenador[campeon].push(medallaAsignadaMes);
+                }
+
+                const medallasAcumuladas = historialMedallasPorEntrenador[campeon];
+
+                if (medallasAcumuladas.length > 0) {
+                    const imgsHtml = medallasAcumuladas.map(m => `<img src="medallas/${m}" alt="Medalla ${m}">`).join('');
+                    columnaMedallas = `
+                        <div class="contenedor-medallas-grid" title="Pulsar para gestionar medalla">
+                            ${imgsHtml}
+                        </div>`;
+                } else {
+                    columnaMedallas = `<span style="color: #666; font-size: 0.8rem;">Sin medalla</span>`;
+                }
+
+                const victoriasTotalesDeEsteDuelista = conteoTotalVictorias[campeon] || 0;
                 
-                if (acumuladorEstrellas[campeon] === estrellasTotalesDeEsteDuelista && estrellasTotalesDeEsteDuelista === maxEstrellas && maxEstrellas > 0) {
+                if (acumuladorGanados[campeon] === victoriasTotalesDeEsteDuelista && victoriasTotalesDeEsteDuelista === maxVictorias && maxVictorias > 0) {
                     claseMitica = ' class="rainbow-glow"';
                 } else {
                     claseMitica = ' class="gold-glow"';
@@ -1829,23 +2005,35 @@
 
             const filaM = document.createElement('tr');
             filaM.innerHTML = `
-                <td style="color: #313131; font-weight: 800;">${mes}</td>
-                <td${claseMitica} style="white-space: nowrap !important;">${campeon}</td>
-                <td${claseMitica} style="text-align: left;">${columnaEstrellas}</td>
-                <td class="columna-acciones-anual">${botonEliminarHtml}</td>
+                <td style="color: #313131; font-weight: 800; vertical-align: middle;">${mes}</td>
+                <td${claseMitica} style="white-space: nowrap !important; vertical-align: middle;">${campeon}</td>
+                <td class="celda-medalla-interactiva" data-mes="${mes}" data-campeon="${campeon}" style="text-align: left; vertical-align: middle; cursor: pointer;">${columnaMedallas}</td>
+                <td class="columna-acciones-anual" style="vertical-align: middle;">${botonEliminarHtml}</td>
             `;
             cuerpoMasterChampion.appendChild(filaM);
         });
 
+        // Permitir abrir el modal al tocar la celda de medallas en la tabla (Admin)
+        document.querySelectorAll('.celda-medalla-interactiva').forEach(celda => {
+            celda.addEventListener('click', (e) => {
+                const mes = celda.getAttribute('data-mes');
+                const campeon = celda.getAttribute('data-campeon');
+                if (campeon && campeon !== "-") {
+                    abrirModalAsignarMedalla(mes, campeon);
+                }
+            });
+        });
+
         document.querySelectorAll('.btn-del-mes').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const mes = e.target.getAttribute('data-mes');
                 eliminarCampeonMensual(mes);
             });
         });
 
-        if (maxEstrellas > 0 && appEstado.anoFinalizado) {
-            const campeonesAnuales = Object.keys(conteoTotalEstrellas).filter(p => conteoTotalEstrellas[p] === maxEstrellas);
+        if (maxVictorias > 0 && appEstado.anoFinalizado) {
+            const campeonesAnuales = Object.keys(conteoTotalVictorias).filter(p => conteoTotalVictorias[p] === maxVictorias);
             textoCampeonAnual.textContent = campeonesAnuales.join(" & ") + " - SERIES TRAINER CHAMPION";
             bannerCampeonAnual.style.display = "block";
         } else {
@@ -1974,6 +2162,7 @@
             appEstado.maestroDuelistas = [];
             Object.keys(appEstado.jornadas).forEach(dia => { appEstado.jornadas[dia] = []; });
             appEstado.campeonesMensuales = {};
+            appEstado.medallasMensuales = {};
             despacharPersistencia();
             secMaestroDuelistas.style.display = "none";
         }
