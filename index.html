@@ -102,24 +102,13 @@
             text-shadow: 0 0 8px rgba(160, 160, 204, 0.3);
         }
 
-        /* Título con resplandor continuo que se enciende y apaga suavemente cada 2s */
-        .main-title {
-            font-size: clamp(2.2rem, 6vh, 4.2rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            line-height: 1.1;
-            
-            /* Degradado dorado metálico */
-            background: linear-gradient(
-                180deg, 
-                #ffffff 0%, 
-                #fff2a3 30%, 
-                #ffcc00 70%, 
-                #b8860b 100%
-            );
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* Imagen del título principal con resplandor continuo y control de tamaño */
+        .main-logo {
+            width: clamp(250px, 40vw, 450px);
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
             
             /* Animación suave de 2 segundos */
             animation: smoothPulse 2s infinite alternate ease-in-out;
@@ -203,17 +192,12 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .portal-card h2 {
-            font-size: clamp(1.1rem, 2.3vh, 1.4rem);
-            letter-spacing: 1px;
-            font-weight: 700;
-        }
-
-        .portal-card h3 {
-            font-size: clamp(2rem, 4.5vh, 2.8rem);
-            margin-bottom: clamp(6px, 1.2vh, 12px);
-            font-weight: 900;
-            line-height: 1.1;
+        .portal-title-img {
+            width: clamp(160px, 25vw, 280px);
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto clamp(6px, 1.2vh, 12px) auto;
         }
 
         .portal-card p {
@@ -243,11 +227,6 @@
             box-shadow: inset 0 0 15px rgba(255, 204, 0, 0.08);
         }
 
-        .yugioh-portal h3 {
-            color: var(--gold-yugioh);
-            text-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
-        }
-
         .yugioh-portal .btn-action {
             background: rgba(255, 204, 0, 0.12);
             border: 2px solid var(--gold-yugioh);
@@ -273,11 +252,6 @@
         .pokemon-portal {
             border-color: rgba(0, 210, 255, 0.4);
             box-shadow: inset 0 0 15px rgba(0, 210, 255, 0.08);
-        }
-
-        .pokemon-portal h3 {
-            color: var(--blue-pokemon);
-            text-shadow: 0 0 15px rgba(0, 210, 255, 0.6);
         }
 
         .pokemon-portal .btn-action {
@@ -308,7 +282,7 @@
         <!-- Encabezado Principal con Resplandor Suave -->
         <header class="hero-header">
             <h2 class="sub-title">BIENVENIDO A</h2>
-            <h1 class="main-title">DUELIST KINGDOM EC</h1>
+            <img src="dkOTS.png" alt="DUELIST KINGDOM EC" class="main-logo">
             <p class="store-tag">TIENDA TCG &amp; CENTRO DE TORNEOS</p>
         </header>
 
@@ -318,8 +292,7 @@
             <a href="masterLigaDK.html" class="portal-card yugioh-portal">
                 <div class="portal-content">
                     <span class="badge">TCG</span>
-                    <h2>MASTER LIGA DK</h2>
-                    <h3>Yu-Gi-Oh!</h3>
+                    <img src="yugiTitulo.png" alt="MASTER LIGA DK - Yu-Gi-Oh!" class="portal-title-img">
                     <p>It's Time to Duel!</p>
                     <span class="btn-action">INICIAR DUELO</span>
                 </div>
@@ -329,8 +302,7 @@
             <a href="seriesPokemon.html" class="portal-card pokemon-portal">
                 <div class="portal-content">
                     <span class="badge">TCG</span>
-                    <h2>POKEDEX DK</h2>
-                    <h3>POKÉMON</h3>
+                    <img src="pokeTitulo.png" alt="POKEDEX DK - POKÉMON" class="portal-title-img">
                     <p>Gotta catch 'em all!</p>
                     <span class="btn-action">INICIAR AVENTURA</span>
                 </div>
