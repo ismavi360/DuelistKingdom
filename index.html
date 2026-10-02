@@ -110,8 +110,8 @@
             display: block;
             margin: 0 auto;
             
-            /* Animación suave de 2 segundos */
-            animation: smoothPulse 2s infinite alternate ease-in-out;
+            /* Animación suave de 3 segundos */
+            animation: smoothPulse 3s infinite alternate ease-in-out;
         }
 
         .store-tag {
@@ -147,7 +147,7 @@
             width: 100%;
             gap: clamp(15px, 2.5vh, 30px);
             justify-content: center;
-            align-items: center;
+            align-items: stretch; /* Asegura que ambas tarjetas tengan exactamente la misma altura */
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
@@ -173,11 +173,17 @@
             flex-direction: column;
             justify-content: space-between;
             text-align: center;
+            height: 100%;
         }
 
         .portal-content {
             position: relative;
             z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: space-between;
         }
 
         .badge {
@@ -193,9 +199,9 @@
         }
 
         .portal-title-img {
-            width: clamp(160px, 25vw, 280px);
             max-width: 100%;
-            height: auto;
+            height: clamp(100px, 20vh, 200px); /* Altura idéntica garantizada para ambas imágenes */
+            object-fit: contain;             /* Mantiene la proporción visual sin deformar */
             display: block;
             margin: 0 auto clamp(6px, 1.2vh, 12px) auto;
         }
@@ -291,7 +297,6 @@
             <!-- Botón Yu-Gi-Oh! -->
             <a href="masterLigaDK.html" class="portal-card yugioh-portal">
                 <div class="portal-content">
-                    <span class="badge">TCG</span>
                     <img src="yugiTitulo.png" alt="MASTER LIGA DK - Yu-Gi-Oh!" class="portal-title-img">
                     <p>It's Time to Duel!</p>
                     <span class="btn-action">INICIAR DUELO</span>
@@ -301,7 +306,6 @@
             <!-- Botón Pokémon -->
             <a href="seriesPokemon.html" class="portal-card pokemon-portal">
                 <div class="portal-content">
-                    <span class="badge">TCG</span>
                     <img src="pokeTitulo.png" alt="POKEDEX DK - POKÉMON" class="portal-title-img">
                     <p>Gotta catch 'em all!</p>
                     <span class="btn-action">INICIAR AVENTURA</span>
