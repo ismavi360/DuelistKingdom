@@ -49,9 +49,9 @@
 
         body {
             background-color: var(--bg-principal);
-            background-image: url('dkMosaicoRed.png');
+            background-image: url('pokeMosaico.png');
             background-repeat: repeat;
-            background-size: 260px 160px;
+            background-size: 170px 72px;
             color: var(--texto-claro);
             padding: 15px;
             line-height: 1.6;
@@ -82,14 +82,12 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
 
-        /* Título Principal estilo Pokédex */
-        header h1 {
-            font-size: 2.5rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 900;
-            color: #ffffff;
-            text-shadow: 2px 2px 0px var(--gris-oscuro);
+        /* Imagen del Título Principal estilo Pokédex */
+        .img-titulo-header {
+            max-width: 320px;
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         header p {
@@ -712,8 +710,8 @@
                 padding: 10px;
             }
 
-            header h1 {
-                font-size: 1.8rem;
+            .img-titulo-header {
+                max-width: 240px;
             }
 
             .tarjeta {
@@ -823,7 +821,7 @@
 
 <div class="contenedor">
     <header>
-        <h1>POKEDEX DK</h1>
+        <img src="pokeTitulo.png" alt="POKEDEX DK" class="img-titulo-header">
         <p id="subtitulo-header">LIGA POKEMON - Duelist Kingdom</p>
         <button class="btn btn-accion btn-auth-header" id="btn-modo-auth">🔑 Acceso Admin</button>
     </header>
